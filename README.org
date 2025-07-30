@@ -1,0 +1,42 @@
+#+title: Try to use MinkowskiEngine on Debian 12
+
+This does not work yet.
+
+In an empty directory and with no any venv activated:
+
+#+begin_example
+$ uv init --python 3.12.11
+$ uv add --default-index https://download.pytorch.org/whl/cu126 --index https://pypi.org/simple torch==2.7.1 torchvision==0.22.1
+#+end_example
+
+Verify this layer works
+
+#+begin_example
+$ uv run python -c "import torch; print(torch.cuda.is_available()); print(torch.version.cuda);"
+True
+12.6
+#+end_example
+
+All attempts to install ME via ~uv~ or ~pip~ hit insurmountable problems.  So, we
+try to install it from source.
+
+#+begin_example
+$ source source .venv/bin/activate
+$ git clone https://github.com/NVIDIA/MinkowskiEngine.git
+$ cd MinkowskiEngine
+
+$ git checkout v0.5.4
+
+$ emacs setup.py  #  comment out line: run_command("pip", "uninstall", "MinkowskiEngine", "-y")
+
+$ LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu/ python setup.py install --force_cuda --cuda_home=$VIRTUAL_ENV/lib/python3.12/site-packages/nvidia/cuda_runtime --blas=openblas
+#+end_example
+
+Note, I believe "CUDA runtime" refers to all CUDA libs except ~libcuda.so~.  That
+must be provided by the OS as it is tied to the Linux kernel module.
+
+However, this build fails with a huge number of warnings and fatal errors due to
+internal source code bugs.
+
+In conclusion: *NO CONFIDENCE*
+
