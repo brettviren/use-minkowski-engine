@@ -1,6 +1,12 @@
 #+title: Try to use MinkowskiEngine on Debian 12
 
-This does not work yet.
+* Via pip
+
+Yeah, right.  Don't even bother.
+
+* From source
+
+This also does not work but at least you can waste part of your life to get to the point of failure.
 
 In an empty directory and with no any venv activated:
 
@@ -39,4 +45,42 @@ However, this build fails with a huge number of warnings and fatal errors due to
 internal source code bugs.
 
 In conclusion: *NO CONFIDENCE*
+
+* Container
+
+Others have suffered this package but a recent (2 days ago) comment on a bug:
+
+  https://github.com/NVIDIA/MinkowskiEngine/issues/621
+
+Give [[https://github.com/NVIDIA/MinkowskiEngine/issues/621#issuecomment-3128269887][a containerfile]] to try.  This seems to complete.
+
+#+begin_example
+$ cd containers/QuteSaltyFish/
+$ podman build -t use-minkowski-engine .
+$ podman run --rm --device nvidia.com/gpu=all -it use-minkowski-engine
+#+end_example
+
+In the container
+
+#+begin_example
+root@03659dd4d61c:/workspace/MinkowskiEngine# OMP_NUM_THREADS=12 python -c 'import MinkowskiEngine; print(MinkowskiEngine.__version__)'  
+0.5.4
+#+end_example
+
+Note, on wcgpu you very likely need to properly set ~CONTAINERS_STORAGE_CONF~ so
+podman does not use your home directory to store containers and ~TMPDIR~ so ~/tmp~ does not fill.
+#+begin_example
+$ echo echo $TMPDIR
+/nfs/data/1/bviren/tmp
+$ echo $CONTAINERS_STORAGE_CONF
+/nfs/data/1/bviren/containers/storage.conf
+$ cat /nfs/data/1/bviren/containers/storage.conf
+[storage]
+driver = "overlay"
+graphroot = "/nfs/data/1/bviren/containers/storage"
+rootless_storage_path = "/nfs/data/1/bviren/containers/storage"
+#+end_example
+
+Set the env vars and make the directories that are mentioned in ~storage.conf~.
+
 
